@@ -9,10 +9,26 @@ import h5py
 import h5_util
 import model_loader
 import os
+from torch import linalg as LA
 
 ################################################################################
 #                 Supporting functions for weights manipulation
 ################################################################################
+
+#computation of L2-norm/frobenius norm for convolution
+def SVD_Conv_Tensor(conv, inp_shape):
+    """ Find the singular values of the linear transformation
+    corresponding to the convolution represented by conv on
+    an n x n x depth input. """
+    conv_tr = conv.permute(2, 3, 0, 1).to(torch.complex64)
+    conv_shape = conv.shape
+    padding = torch.nn.functional.pad(conv_tr, [0, inp_shape[1] - conv_shape[1], 0, inp_shape[0] - conv_shape[0]],
+                                      'constant', 0)
+    transform_coeff = torch.fft.fft2(padding)
+    singular_values = torch.svd(transform_coeff.permute(2, 3, 0, 1), compute_uv=False).S
+    return singular_values[0, 0, 0]
+
+
 def get_weights(net):
     """ Extract parameters from net, and return a list of tensors"""
     return [p.data for p in net.parameters()]
