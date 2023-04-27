@@ -118,7 +118,7 @@ def get_diff_states(states, states2):
 #                        Normalization Functions
 ################################################################################
 
-input_vgg9 = [32,32,16,16,8,8,8]
+input_vgg9 = [32,32,16,16,8,8,8,4096,256]
 def normalize_direction(direction, weights,layer_number, norm='filter'):
     """
         Rescale the direction so that it has similar norm as their corresponding
@@ -149,12 +149,13 @@ def normalize_direction(direction, weights,layer_number, norm='filter'):
         # mockup of layer norm
         if len(direction.shape) == 1:  # don't need to check w.shape as it equals d.shape
             direction.mul_(weights.norm() / (direction.norm() + 1e-10))
-        else:
+        elif layer_number <=6:
             print(input_vgg9[layer_number])
             direction.mul_(conv_l2_norm(weights, [input_vgg9[layer_number],input_vgg9[layer_number]]) / (
                         conv_l2_norm(direction, [input_vgg9[layer_number],input_vgg9[layer_number]]) + 1e-10))  # changed from frobenius vector norm to l2 matrix norm
-
-        direction.mul_(weights.norm()/direction.norm())
+        elif layer_number > 6:
+            direction.mul_(linear_l2_norm(weights) / (linear_l2_norm(direction) + 1e-10))
+        # direction.mul_(weights.norm()/direction.norm())
     elif norm == 'weight':
         # Rescale the entries in the direction so that each entry has the same
         # scale as the corresponding weight.
