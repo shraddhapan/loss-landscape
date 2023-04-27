@@ -27,12 +27,12 @@ def conv_l2_norm(conv, inp_shape):
                                       'constant', 0)
     transform_coeff = torch.fft.fft2(padding)
     singular_values = torch.svd(transform_coeff.permute(2, 3, 0, 1), compute_uv=False).S
-    return tensor.view(-1)[0].item() #first/highest element
+    return singular_values.view(-1)[0].item() #first/highest element
 
 def linear_l2_norm(weight_mat) :
     """For a weight matrix the l2 norm is the highest singular value of the matrix"""
     singular_values = torch.svd(weight_mat, compute_uv = False)
-    return tensor.view(-1)[0].item() #first/highest element
+    return singular_values.view(-1)[0].item() #first/highest element
 
 
 def get_weights(net):
@@ -132,7 +132,7 @@ def normalize_direction(direction, weights, norm='filter'):
         # filter has the same norm as its corresponding filter in 'weights'.
         for d, w in zip(direction, weights):
             # d.mul_(w.norm()/(d.norm() + 1e-10))
-            d.mul_(LA.matrix_norm(w, ord=2)/(LA.matrix_norm(d, ord=2) + 1e-10))  #changed from frobenius vector norm to l2 matrix norm
+            d.mul_(LA.matrix_norm(w, ord=2).view(-1)[0].item()/(LA.matrix_norm(d, ord=2).view(-1)[0].item() + 1e-10))  #changed from frobenius vector norm to l2 matrix norm
 
     elif norm == 'layer':
         # Rescale the layer variables in the direction so that each layer has
