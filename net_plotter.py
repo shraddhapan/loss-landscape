@@ -27,13 +27,13 @@ def conv_l2_norm(conv, inp_shape):
                                       'constant', 0)
     transform_coeff = torch.fft.fft2(padding)
     singular_values = torch.svd(transform_coeff.permute(2, 3, 0, 1), compute_uv=False).S
-    print(singular_values.shape)
+    print(singular_values)
     return torch.Tensor(singular_values).view(-1)[0].item() #first/highest element
 
 def linear_l2_norm(weight_mat) :
     """For a weight matrix the l2 norm is the highest singular value of the matrix"""
     singular_values = torch.svd(weight_mat, compute_uv = False)
-    print(singular_values.shape)
+    
     return torch.Tensor(singular_values).view(-1)[0].item() #first/highest element
 
 
