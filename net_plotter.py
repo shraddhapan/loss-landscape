@@ -132,7 +132,7 @@ def normalize_direction(direction, weights, norm='filter'):
     if norm == 'filter':
         # Rescale the filters (weights in group) in 'direction' so that each
         # filter has the same norm as its corresponding filter in 'weights'.
-        print(weights.shape, direction.shape)
+        # print(weights.shape, direction.shape)
         for d, w in zip(direction, weights):
             # d.mul_(w.norm()/(d.norm() + 1e-10))
 
