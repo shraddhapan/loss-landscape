@@ -32,7 +32,7 @@ def conv_l2_norm(conv, inp_shape):
 
 def linear_l2_norm(weight_mat) :
     """For a weight matrix the l2 norm is the highest singular value of the matrix"""
-    singular_values = torch.svd(weight_mat, compute_uv = False)
+    singular_values = torch.svd(weight_mat, compute_uv = False).S
     return singular_values.view(-1)[0].item() #first/highest element
 
 
