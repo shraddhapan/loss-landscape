@@ -15,8 +15,8 @@ from torch import linalg as LA
 #                 Supporting functions for weights manipulation
 ################################################################################
 
-#computation of L2-norm/frobenius norm for convolution
-def SVD_Conv_Tensor(conv, inp_shape):
+# computation of L2-norm/frobenius norm for convolution
+def conv_l2_norm(conv, inp_shape):
     """ Find the singular values of the linear transformation
     corresponding to the convolution represented by conv on
     an n x n x depth input. """
@@ -26,7 +26,12 @@ def SVD_Conv_Tensor(conv, inp_shape):
                                       'constant', 0)
     transform_coeff = torch.fft.fft2(padding)
     singular_values = torch.svd(transform_coeff.permute(2, 3, 0, 1), compute_uv=False).S
-    return singular_values[0, 0, 0]
+    return tensor.view(-1)[0].item() #first/highest element
+
+def linear_l2_norm(weight_mat) :
+    """For a weight matrix the l2 norm is the highest singular value of the matrix"""
+    singular_values = torch.svd(weight_mat, compute_uv = False)
+    return tensor.view(-1)[0].item() #first/highest element
 
 
 def get_weights(net):
