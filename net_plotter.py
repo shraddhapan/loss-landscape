@@ -147,7 +147,7 @@ def normalize_direction(direction, weights,layer_number, norm='filter'):
         # Rescale the layer variables in the direction so that each layer has
         # the same norm as the layer variables in weights.
         # mockup of layer norm
-        if len(d.shape) == 1:  # don't need to check w.shape as it equals d.shape
+        if len(direction.shape) == 1:  # don't need to check w.shape as it equals d.shape
             direction.mul_(weights.norm() / (direction.norm() + 1e-10))
         else:
             print(input_vgg9[layer_number])
