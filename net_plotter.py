@@ -117,6 +117,8 @@ def get_diff_states(states, states2):
 ################################################################################
 #                        Normalization Functions
 ################################################################################
+
+input_vgg9 = [32,32,16,16,8,8,8]
 def normalize_direction(direction, weights, norm='filter'):
     """
         Rescale the direction so that it has similar norm as their corresponding
@@ -134,21 +136,23 @@ def normalize_direction(direction, weights, norm='filter'):
             # d.mul_(w.norm()/(d.norm() + 1e-10))
 
             #actual filter norm
-            # if len(d.shape) == 1: #don't need to check w.shape as it equals d.shape
-            #     d.mul_(w.norm() / (d.norm() + 1e-10))
-            # else:
-            #     d.mul_(LA.matrix_norm(w, ord=2).view(-1)[0].item()/(LA.matrix_norm(d, ord=2).view(-1)[0].item() + 1e-10))  #changed from frobenius vector norm to l2 matrix norm
-
-            #mockup of layer norm
+            print(w.shape, d.shape)
             if len(d.shape) == 1: #don't need to check w.shape as it equals d.shape
                 d.mul_(w.norm() / (d.norm() + 1e-10))
             else:
-                print(w.shape, d.shape)
-                d.mul_(conv_l2_norm(w,[32,32])/(conv_l2_norm(d,[32,32]) + 1e-10))  #changed from frobenius vector norm to l2 matrix norm
+                d.mul_(LA.matrix_norm(w, ord=2).view(-1)[0].item()/(LA.matrix_norm(d, ord=2).view(-1)[0].item() + 1e-10))  #changed from frobenius vector norm to l2 matrix norm
 
     elif norm == 'layer':
         # Rescale the layer variables in the direction so that each layer has
         # the same norm as the layer variables in weights.
+        # mockup of layer norm
+        if len(d.shape) == 1:  # don't need to check w.shape as it equals d.shape
+            direction.mul_(weights.norm() / (direction.norm() + 1e-10))
+        else:
+
+            direction.mul_(conv_l2_norm(weights, [32, 32]) / (
+                        conv_l2_norm(direction, [32, 32]) + 1e-10))  # changed from frobenius vector norm to l2 matrix norm
+
         direction.mul_(weights.norm()/direction.norm())
     elif norm == 'weight':
         # Rescale the entries in the direction so that each entry has the same
