@@ -143,6 +143,7 @@ def normalize_direction(direction, weights, norm='filter'):
             if len(d.shape) == 1: #don't need to check w.shape as it equals d.shape
                 d.mul_(w.norm() / (d.norm() + 1e-10))
             else:
+                print(w.shape, d.shape)
                 d.mul_(conv_l2_norm(w,[32,32])/(conv_l2_norm(d,[32,32]) + 1e-10))  #changed from frobenius vector norm to l2 matrix norm
 
     elif norm == 'layer':
