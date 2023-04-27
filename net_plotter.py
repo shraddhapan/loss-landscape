@@ -11,6 +11,7 @@ import model_loader
 import os
 from torch import linalg as LA
 
+
 ################################################################################
 #                 Supporting functions for weights manipulation
 ################################################################################
@@ -130,7 +131,9 @@ def normalize_direction(direction, weights, norm='filter'):
         # Rescale the filters (weights in group) in 'direction' so that each
         # filter has the same norm as its corresponding filter in 'weights'.
         for d, w in zip(direction, weights):
-            d.mul_(w.norm()/(d.norm() + 1e-10))
+            # d.mul_(w.norm()/(d.norm() + 1e-10))
+            d.mul_(LA.matrix_norm(w, ord=2)/(LA.matrix_norm(d, ord=2) + 1e-10))  #changed from frobenius vector norm to l2 matrix norm
+
     elif norm == 'layer':
         # Rescale the layer variables in the direction so that each layer has
         # the same norm as the layer variables in weights.
