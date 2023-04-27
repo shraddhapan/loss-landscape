@@ -119,7 +119,7 @@ def get_diff_states(states, states2):
 ################################################################################
 
 input_vgg9 = [32,32,16,16,8,8,8]
-def normalize_direction(direction, weights, norm='filter'):
+def normalize_direction(direction, weights,layer_number, norm='filter'):
     """
         Rescale the direction so that it has similar norm as their corresponding
         model in different levels.
@@ -150,9 +150,9 @@ def normalize_direction(direction, weights, norm='filter'):
         if len(d.shape) == 1:  # don't need to check w.shape as it equals d.shape
             direction.mul_(weights.norm() / (direction.norm() + 1e-10))
         else:
-
-            direction.mul_(conv_l2_norm(weights, [32, 32]) / (
-                        conv_l2_norm(direction, [32, 32]) + 1e-10))  # changed from frobenius vector norm to l2 matrix norm
+            print(input_vgg9[layer_number])
+            direction.mul_(conv_l2_norm(weights, [input_vgg9[layer_number],input_vgg9[layer_number]]) / (
+                        conv_l2_norm(direction, [input_vgg9[layer_number],input_vgg9[layer_number]]) + 1e-10))  # changed from frobenius vector norm to l2 matrix norm
 
         direction.mul_(weights.norm()/direction.norm())
     elif norm == 'weight':
@@ -175,6 +175,7 @@ def normalize_directions_for_weights(direction, weights, norm='filter', ignore='
         The normalization scales the direction entries according to the entries of weights.
     """
     assert(len(direction) == len(weights))
+    layer_number = 0
     for d, w in zip(direction, weights):
         if d.dim() <= 1:
             if ignore == 'biasbn':
@@ -182,7 +183,8 @@ def normalize_directions_for_weights(direction, weights, norm='filter', ignore='
             else:
                 d.copy_(w) # keep directions for weights/bias that are only 1 per node
         else:
-            normalize_direction(d, w, norm)
+            normalize_direction(d, w,layer_number, norm)
+            layer_number+=1
 
 
 def normalize_directions_for_states(direction, states, norm='filter', ignore='ignore'):
