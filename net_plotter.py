@@ -132,8 +132,11 @@ def normalize_direction(direction, weights, norm='filter'):
         # filter has the same norm as its corresponding filter in 'weights'.
         for d, w in zip(direction, weights):
             # d.mul_(w.norm()/(d.norm() + 1e-10))
-            print(d.shape, w.shape)
-            d.mul_(LA.matrix_norm(w, ord=2).view(-1)[0].item()/(LA.matrix_norm(d, ord=2).view(-1)[0].item() + 1e-10))  #changed from frobenius vector norm to l2 matrix norm
+            # print(d.shape, w.shape)
+            if len(d.shape) == 1: #don't need to check w.shape as it equals d.shape
+                d.mul_(w.norm() / (d.norm() + 1e-10))
+            else:
+                d.mul_(LA.matrix_norm(w, ord=2).view(-1)[0].item()/(LA.matrix_norm(d, ord=2).view(-1)[0].item() + 1e-10))  #changed from frobenius vector norm to l2 matrix norm
 
     elif norm == 'layer':
         # Rescale the layer variables in the direction so that each layer has
