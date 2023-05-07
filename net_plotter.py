@@ -93,6 +93,8 @@ def get_random_weights(weights):
         Produce a random direction that is a list of random Gaussian tensors
         with the same shape as the network's weights, so one direction entry per weight.
     """
+
+    # torch.manual_seed(42)
     return [torch.randn(w.size()) for w in weights]
 
 
@@ -120,6 +122,12 @@ def get_diff_states(states, states2):
 ################################################################################
 
 input_vgg9 = [32,32,16,16,8,8,8,4096,256]
+input_resnet18 = [32,32,32,32,32,32,16,32,16,16,16,8,16,8,8,8,4,8,4,4]
+input_resnet18_noshort = [32,32,32,32,32,32,16,16,16,16,8,8,8,8,4,4,4]
+input_resnet34 = [32,32,32,32,32,32,32,32,16,32,16,16,16,16,16,16,16,8,16,8,8,8,8,8,8,8,8,8,8,8,4,8,4,4,4,4]
+input_resnet34_noshort = [32,32,32,32,32,32,32,32,16,16,16,16,16,16,16,16,8,8,8,8,8,8,8,8,8,8,8,8,4,4,4,4,4]
+
+
 def normalize_direction(direction, weights,layer_number, norm='filter'):
     """
         Rescale the direction so that it has similar norm as their corresponding
@@ -145,16 +153,19 @@ def normalize_direction(direction, weights,layer_number, norm='filter'):
                 d.mul_(LA.matrix_norm(w, ord=2).view(-1)[0].item()/(LA.matrix_norm(d, ord=2).view(-1)[0].item() + 1e-10))  #changed from frobenius vector norm to l2 matrix norm
 
     elif norm == 'layer':
+
         # Rescale the layer variables in the direction so that each layer has
         # the same norm as the layer variables in weights.
         # mockup of layer norm
+
         if len(direction.shape) == 1:  # don't need to check w.shape as it equals d.shape
             direction.mul_(weights.norm() / (direction.norm() + 1e-10))
-        elif layer_number <=6:
-            print(input_vgg9[layer_number])
-            direction.mul_(conv_l2_norm(weights, [input_vgg9[layer_number],input_vgg9[layer_number]]) / (
-                        conv_l2_norm(direction, [input_vgg9[layer_number],input_vgg9[layer_number]]) + 1e-10))  # changed from frobenius vector norm to l2 matrix norm
-        elif layer_number > 6:
+        elif layer_number <=19: #vgg9 :6, resnet 18 : 19, resnet18noshort : 16, 35 for resnet34, 32 for resnet34_noshort
+            print("in layer for ", weights.shape)
+            # print(input_resnet18[layer_number])
+            direction.mul_(conv_l2_norm(weights, [input_resnet18[layer_number],input_resnet18[layer_number]]) / (
+                        conv_l2_norm(direction, [input_resnet18[layer_number],input_resnet18[layer_number]]) + 1e-10))  # changed from frobenius vector norm to l2 matrix norm
+        elif layer_number > 19:
             direction.mul_(linear_l2_norm(weights) / (linear_l2_norm(direction) + 1e-10))
         # direction.mul_(weights.norm()/direction.norm())
     elif norm == 'weight':
